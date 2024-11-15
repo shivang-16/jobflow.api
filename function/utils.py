@@ -1,0 +1,30 @@
+def createFile(file, title, company_name, job_link, job_location, job_salary=None, source=None):
+    if title and company_name and job_link and job_location:
+        print(title, company_name, "scrapiing....")
+        file.write(f"Job Title: {title}\n")
+        file.write(f"Company Name: {company_name}\n")
+        file.write(f"Job Link: {job_link}\n")
+        file.write(f"Job Location: {job_location}\n")
+        if job_salary:
+            file.write(f"Job Salary: {job_salary}\n")
+        if source:
+            file.write(f"Source: {source}\n")
+        file.write("\n")
+
+def fetch_job_salary(job_url):
+    try:
+        response = requests.get(job_url, headers=headers)
+        response.raise_for_status()
+        job_page = BeautifulSoup(response.text, 'html.parser')
+
+        with open("QJobpage_linkedin.html", "w", encoding="utf-8") as file:
+            file.write(job_page.prettify())
+
+        salary_element = job_page.find('div', class_='salary compensation__salary')
+        if salary_element:
+            return salary_element.text.strip()
+        else:
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to fetch salary from {job_url}: {e}")
+        return None

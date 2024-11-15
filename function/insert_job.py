@@ -19,18 +19,15 @@ async def insert_job(job):
         "source": to_lowercase(job.get('source', 'N/A')),
         "posted": job.get('posted', datetime.utcnow()),
     }
-    print(dir(db), "here is")
 
     # Validate input
     try:
-        # Assuming 'db.job.create' is correctly set as async
         job = await db.job.create(data=job_document)
         print("job created")
-        return job  # Return the created job object
+        return job 
     
     except Exception as e:
         print(e, "from insert")  # Output the error to the console for debugging
-        # Return a dictionary instead of 'jsonify' in an async context
         return {'error': str(e)}, 500
     
     finally:
