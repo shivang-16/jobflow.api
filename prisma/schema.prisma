@@ -26,8 +26,10 @@ model Job {
   company_name  String
   job_link      String
   job_location  String
-  job_salary    String
+  job_salary    String?  
   source        String
   posted        DateTime
   created_at    DateTime @default(now())
+
+  @@unique([title, company_name])  // This creates a unique index on title and company_name
 }

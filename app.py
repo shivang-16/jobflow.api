@@ -3,8 +3,12 @@ from prisma import register
 from controllers.auth import user_blueprint
 from controllers.job import job_blueprint
 from db.prisma import db
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+
+CORS(app, origins="*", methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization"])
 
 # Register Prisma with Flask
 register(db)

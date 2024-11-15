@@ -15,7 +15,7 @@ async def insert_job(job):
         "company_name": to_lowercase(job.get('company_name', 'N/A')),
         "job_link": to_lowercase(job.get('job_link', 'N/A')),
         "job_location": to_lowercase(job.get('job_location', 'N/A')),
-        "job_salary": job.get('job_salary', 'N/A'),
+        "job_salary": job.get('job_salary', None),
         "source": to_lowercase(job.get('source', 'N/A')),
         "posted": job.get('posted', datetime.utcnow()),
     }

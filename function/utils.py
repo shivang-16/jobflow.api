@@ -1,3 +1,10 @@
+import requests
+from bs4 import BeautifulSoup
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+}
+
 def createFile(file, title, company_name, job_link, job_location, job_salary=None, source=None):
     if title and company_name and job_link and job_location:
         print(title, company_name, "scrapiing....")
