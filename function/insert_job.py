@@ -4,7 +4,6 @@ from db.prisma import db
 async def insert_job(job):
     await db.connect()
 
-  
     print("inside job", job)
     def to_lowercase(value):
         return value.lower() if isinstance(value, str) else 'n/a'
@@ -27,7 +26,7 @@ async def insert_job(job):
         return job 
     
     except Exception as e:
-        print(e, "from insert")  # Output the error to the console for debugging
+        print(e, "Error from insert_job function")  # Output the error to the console for debugging
         return {'error': str(e)}, 500
     
     finally:

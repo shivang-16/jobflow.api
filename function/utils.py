@@ -6,6 +6,7 @@ headers = {
 }
 
 def createFile(file, title, company_name, job_link, job_location, job_salary=None, source=None):
+    print("inside create file")
     if title and company_name and job_link and job_location:
         print(title, company_name, "scrapiing....")
         file.write(f"Job Title: {title}\n")

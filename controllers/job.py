@@ -7,12 +7,11 @@ job_blueprint = Blueprint('job', __name__)
 @job_blueprint.route('/', methods=['GET'])
 async def create_job():   
     try:
-        print("inset scrar efunciotn ")
         await scrapejobsdata()
         return "Successfully inserted job", 201
     
     except Exception as e:
-        print(e, "here is the erorr")  # Output the error to the console for debugging
+        print(e, "Error in create_job function")  # Output the error to the console for debugging
         return jsonify({'error': str(e)}), 500
     
 
@@ -35,8 +34,6 @@ async def get_job():
         page = request.args.get('page', default=1, type=int)
         source = request.args.get('portal', default=None, type=str)
         title = request.args.get('title', default=None, type=str)
-
-        print(page, source, title, "here")
 
         if page < 1:
             return jsonify({'error': "Page must be a positive number"}), 400
