@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id          String      @id @default(uuid()) @db.Uuid
+  id          String   @id @default(uuid()) @db.Uuid
   name        String
   email       String   @unique
   password    String
@@ -23,11 +23,15 @@ model User {
 model Job {
   id            String   @id @default(uuid()) @db.Uuid
   title         String
-  company_name  String
+  company_name  String  
+  company_logo  String?
+  company_link  String?
   job_link      String
-  job_location  String
+  job_type      String
+  job_location  String?
   job_salary    String?  
   source        String
+  source_logo   String?
   posted        DateTime
   created_at    DateTime @default(now())
 

@@ -15,7 +15,8 @@ import os
 
 load_dotenv()
 
-scraperapi_key = '26bc4e3afaac67a53c3edce1b57d7078'
+scraperapi_key = os.getenv('SCRAPER_API')
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
 }
@@ -24,14 +25,14 @@ headers = {
 searchKeyword = 'Web developer'
 
 jobPortals = {
-    # "glassdoor": f"https://www.glassdoor.co.in/Job/india-{searchKeyword}-jobs-SRCH_IL.0,5_IN115_KO6,27.htm?sc.keyword={searchKeyword}",
+    "glassdoor": f"https://www.glassdoor.co.in/Job/india-{searchKeyword}-jobs-SRCH_IL.0,5_IN115_KO6,27.htm?sc.keyword={searchKeyword}",
     # "linkedin": f"https://www.linkedin.com/jobs/search?keywords={searchKeyword}",
     # "simplyhired": f"https://www.simplyhired.co.in/search?q={searchKeyword}",
     # "indeed": f"https://in.indeed.com/jobs?q={searchKeyword}",
     # "foundit": f"https://www.foundit.in/srp/results?query={searchKeyword}",
     # "naukri": f"https://www.naukri.com/{searchKeyword}-jobs?k={searchKeyword}",
     # "internshala": f"https://internshala.com/jobs/{searchKeyword}-jobs/",
-    "ycombinator": f"https://www.workatastartup.com/companies?query={searchKeyword}&sortBy=keyword",
+    # "ycombinator": f"https://www.workatastartup.com/companies?query={searchKeyword}&sortBy=keyword",
     # "upwork": f"https://www.upwork.com/nx/search/jobs/?q={searchKeyword}",
     # "freelancer": f"https://www.freelancer.com/search/projects?q={searchKeyword}",
 }

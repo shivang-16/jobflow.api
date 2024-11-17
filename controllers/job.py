@@ -20,7 +20,9 @@ def serialize_job(job):
         'id': job.id,
         'title': job.title,
         'company_name': job.company_name,
+        'company_logo': job.company_logo,
         'job_location': job.job_location,
+        'job_type': job.job_type,
         'job_salary': job.job_salary,
         'job_link': job.job_link,
         'source': job.source
