@@ -12,6 +12,11 @@ async def scrape_linkedin(soup):
                 job_link = job.find('a', class_='base-card__full-link')
                 job_location = job.find('span', class_='job-search-card__location')
                 job_salary = fetch_job_salary(job_link['href'].strip()) if job_link else None
+                company_logo = job.find('div', class_='search-entity-media').find('img')['data-delayed-url']
+                # if company_logo_element:
+                #     # company_logo = company_logo_element
+
+                print(company_logo, "here is company log")
 
                 if title and company_name and job_link and job_location:
                     job_info = {
