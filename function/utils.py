@@ -1,5 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
+import os
+
+scraperapi_key = os.getenv('SCRAPER_API')
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
@@ -35,4 +38,27 @@ def fetch_job_salary(job_url):
             return None
     except requests.exceptions.RequestException as e:
         print(f"Failed to fetch salary from {job_url}: {e}")
+        return None
+    
+
+async def scrape_job_link(job_link, portal):
+    try:
+        if job_link:
+            if portal == 'ycombinator':
+                response = requests.get(job_link, headers=headers)
+            else:
+                proxy_url = f"http://api.scraperapi.com?api_key={scraperapi_key}&url={job_link}"
+                response = requests.get(proxy_url, headers=headers)
+
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            with open(f"Job_{portal}.html", "w", encoding="utf-8") as file:
+                file.write(soup.prettify())
+
+            return soup
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to scrape {job_link}: {e}")
         return None

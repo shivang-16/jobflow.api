@@ -25,14 +25,14 @@ headers = {
 searchKeyword = 'Web developer'
 
 jobPortals = {
-    "glassdoor": f"https://www.glassdoor.co.in/Job/india-{searchKeyword}-jobs-SRCH_IL.0,5_IN115_KO6,27.htm?sc.keyword={searchKeyword}",
+    # "glassdoor": f"https://www.glassdoor.co.in/Job/india-{searchKeyword}-jobs-SRCH_IL.0,5_IN115_KO6,27.htm?sc.keyword={searchKeyword}",
     # "linkedin": f"https://www.linkedin.com/jobs/search?keywords={searchKeyword}",
     # "simplyhired": f"https://www.simplyhired.co.in/search?q={searchKeyword}",
     # "indeed": f"https://in.indeed.com/jobs?q={searchKeyword}",
     # "foundit": f"https://www.foundit.in/srp/results?query={searchKeyword}",
     # "naukri": f"https://www.naukri.com/{searchKeyword}-jobs?k={searchKeyword}",
     # "internshala": f"https://internshala.com/jobs/{searchKeyword}-jobs/",
-    # "ycombinator": f"https://www.workatastartup.com/companies?query={searchKeyword}&sortBy=keyword",
+    "ycombinator": f"https://www.workatastartup.com/companies?query={searchKeyword}&sortBy=keyword",
     # "upwork": f"https://www.upwork.com/nx/search/jobs/?q={searchKeyword}",
     # "freelancer": f"https://www.freelancer.com/search/projects?q={searchKeyword}",
 }
@@ -43,7 +43,7 @@ async def scrapejobsdata():
         print(f"Scraping {portal}: {url}")
 
         try:
-            if portal == 'linkedin':
+            if portal == 'ycombinator':
                 response = requests.get(url, headers=headers)
             else:
                 proxy_url = f"http://api.scraperapi.com?api_key={scraperapi_key}&url={url}"
@@ -72,8 +72,8 @@ async def scrapejobsdata():
             # elif portal == 'internshala':
             #     await scrape_internshala(soup)
 
-            # elif portal == 'simplyhired':
-            #     await scrape_simplyhired(soup)
+            elif portal == 'simplyhired':
+                await scrape_simplyhired(soup)
 
             # elif portal == 'upwork':
             #     await scrape_upwork(soup)

@@ -15,25 +15,44 @@ model User {
   name        String
   email       String   @unique
   password    String
+  jobs        Job[]
   created_at  DateTime @default(now())
 }
 
 
+model Company {
+  id               String   @id @default(uuid()) @db.Uuid
+  company_name     String
+  description      String?
+  about            Json?
+  company_link     String?
+  company_logo     String?
+  socials          Json?    // JSON field to store all social media links
+
+  jobs             Job[]    // Relation to the Job model
+
+  @@unique([company_name]) // Ensures that company names are unique
+}
 
 model Job {
   id            String   @id @default(uuid()) @db.Uuid
   title         String
-  company_name  String  
-  company_logo  String?
-  company_link  String?
   job_link      String
   job_type      String
+  apply_link    String?
   job_location  String?
   job_salary    String?  
+  job_description    String? 
+  skills_required    String? 
   source        String
   source_logo   String?
   posted        DateTime
   created_at    DateTime @default(now())
 
-  @@unique([title, company_name])  // This creates a unique index on title and company_name
+  userId        String   @db.Uuid
+  user          User     @relation(fields: [userId], references: [id])
+  companyId     String   @db.Uuid  // Ensure this is of type UUID
+  company       Company  @relation(fields: [companyId], references: [id])
+
+  @@unique([title, companyId])  // This creates a unique index on title and companyId
 }
