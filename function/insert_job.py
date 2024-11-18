@@ -12,8 +12,8 @@ async def insert_job(job):
     job_document = {
         "title": to_lowercase(job.get('title', 'N/A')),
         "company_name": to_lowercase(job.get('company_name', 'N/A')),
-        "company_logo": to_lowercase(job.get('company_logo', 'N/A')),
-        "job_link": to_lowercase(job.get('job_link', 'N/A')),
+        "company_logo": job.get('company_logo'),
+        "job_link": job.get('job_link', 'N/A'),
         "job_location": to_lowercase(job.get('job_location', 'N/A')),
         "job_type": to_lowercase(job.get('job_type', 'N/A')),
         "job_salary": job.get('job_salary', None),

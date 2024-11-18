@@ -1,11 +1,8 @@
-from function.utils import createFile, fetch_job_salary
+from function.utils import createFile, scrape_job_link
 from function.insert_job import insert_job
-from bs4 import BeautifulSoup
 
 async def scrape_ycombinator(soup):
     portal = 'ycombinator'
-    print('inside ycombinator')
-
     # Locate all job entries
     jobs = soup.find_all('div', class_='w-full bg-beige-lighter mb-2 rounded-md p-2 border border-gray-200 flex')
 
@@ -16,12 +13,8 @@ async def scrape_ycombinator(soup):
                 title_tag = job.find('div', class_='job-name').find('a')
                 title = title_tag.text.strip() if title_tag else None
 
-                print("here is title_tag", title)
-
                 # Extract job link
                 job_link = title_tag['href'] if title_tag and 'href' in title_tag.attrs else None
-
-                print("here is job", job_link)
 
                 # Extract job location
                 job_details = job.find('p', class_='job-details')
@@ -34,22 +27,36 @@ async def scrape_ycombinator(soup):
                 else:
                     job_location = "Not specified"
                 
-                print(job_location, "here are joblocaiton")
-
                 company_name = job.find('div', class_='company-details').find('span')
+                company_logo_element = job.find('div', class_='company-logo')
+                company_logo = None
+                if company_logo_element:
+                    img_tag = company_logo_element.find('img')
+                    if img_tag:
+                        company_logo = img_tag['src']
+
+                job_details = await scrape_job_link(job_link, portal)
+                job_salary=None
+                if job_details:
+                    job_salary_element = job_details.find('div', class_="company-title")
+                    if job_salary_element:
+                        job_salary = job_salary_element.find('div', class_='text-gray-500 my-2').find('span').text.strip()
+                        print(job_salary)
 
                 # Construct job info dictionary
                 job_info = {
                     "title": title,
                     "job_link": job_link,
                     "job_location": job_location,
-                    "company_name": company_name.text.strip() if company_name else None, 
-                    "job_salary": None,
+                    "company_name": company_name.text.strip() if company_name else None,
+                    "company_logo": company_logo,
+                    "job_salary": job_salary,
                     "source": portal
                 }
 
-                # Insert the job info into the database
-                await insert_job(job_info)
+                print(job_info, "here")
 
-                # Save to file
-                createFile(file, title, None, job_info["job_link"], job_location)
+                # Insert the job info into the database
+                # await insert_job(job_info)
+
+            
