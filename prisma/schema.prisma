@@ -14,7 +14,7 @@ model User {
   id          String   @id @default(uuid()) @db.Uuid
   name        String
   email       String   @unique
-  password    String
+  password    String?
   bookmarked_jobs  String[]
   jobs        Applied_Jobs[]     // Relation to the Job model through a join table
   created_at  DateTime @default(now())

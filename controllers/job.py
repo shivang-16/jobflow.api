@@ -19,8 +19,11 @@ def serialize_job(job):
     return {
         'id': job.id,
         'title': job.title,
-        'company_name': job.company_name,
-        'company_logo': job.company_logo,
+        'company': {
+            'name': job.company.company_name,
+            'logo': job.company.company_logo,
+            'description': job.company.description
+        },
         'job_location': job.job_location,
         'job_type': job.job_type,
         'job_salary': job.job_salary,
@@ -49,11 +52,12 @@ async def get_job():
         if title:
             filter['title'] = {"contains": title}
 
-        # Fetch jobs from the database
+        # Fetch jobs from the database including the company relation
         jobs = await db.job.find_many(
             where=filter,
             skip=skip,
-            take=page_size
+            take=page_size,
+            include={'company': True}  # Include the company relation
         )
 
         # Serialize the job data
@@ -68,4 +72,3 @@ async def get_job():
     finally:
         # Disconnect Prisma client
         await db.disconnect()
-

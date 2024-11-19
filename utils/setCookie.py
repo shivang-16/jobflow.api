@@ -12,7 +12,7 @@ async def setCookie(user):
     token = jwt.encode(payload, JWT_SECRET_TOKEN, algorithm='HS256')
 
     # Create a response object with a success message
-    response = make_response(jsonify({'message': 'User created successfully'}), 201)
+    response = make_response(jsonify({'message': 'User created successfully', "token": token}), 201)
 
     # Set the cookie
     response.set_cookie(

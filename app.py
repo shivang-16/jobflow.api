@@ -9,25 +9,20 @@ from middleware import protect_routes
 
 app = Flask(__name__)
 
-CORS(app, origins="*", methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type", "Authorization"])
-
+CORS(
+    app,
+    origins="*",  # Replace "*" with specific domains if needed, e.g., ["https://example.com"]
+    methods=["GET", "POST", "PUT", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    supports_credentials=True  # Allow credentials (cookies, Authorization headers, etc.)
+)
 # Register Prisma with Flask
 register(db)
-
-# Middleware to connect to the database before each request
-@app.before_request
-async def ensure_db_connection():
-    if not db.is_connected():
-        await db.connect()
 
 @app.route('/')
 def hello_world():
     return 'Hello world'
 
-# Apply the middleware to the job blueprint
-@job_blueprint.before_request
-async def protect_job_routes():
-    return await protect_routes()
 
 # Apply the middleware to the user blueprint
 @user_blueprint.before_request

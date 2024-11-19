@@ -3,6 +3,30 @@ from flask import jsonify, request, Blueprint, g
 
 user_blueprint = Blueprint('user', __name__)
 
+@user_blueprint.route('/get', methods=['GET'])
+async def get_user():
+    await db.connect()
+    try:
+    
+        currentUser = g.user
+
+        user = await db.user.find_unique(where={"id": currentUser.id})
+        if not user:
+            return jsonify({"error": "User not exists"}), 400
+        
+        user_dict = user.model_dump() 
+        
+        print(user_dict, "Fetched User")
+        return jsonify({"success": True, "user": user_dict}), 200
+    
+    except Exception as e:
+        print(e, "here is the error")  # Output the error to the console for debugging
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        # Disconnect Prisma client
+        await db.disconnect()
+
 @user_blueprint.route('/job/apply', methods=['POST'])
 async def apply_job():
     # Find the job by its ID

@@ -6,7 +6,6 @@ async def insert_job(job):
     await db.connect()
 
     try:
-        # print("inside job", job)
         def to_lowercase(value):
             return value.lower() if isinstance(value, str) else 'n/a'
         
@@ -14,16 +13,18 @@ async def insert_job(job):
         if not company_name:
             return jsonify({"error": "Company Name is required"})
         
-        company = db.company.find_unique(where={'company_name': company_name})
+        # Await the asynchronous call to find the company
+        company = await db.company.find_unique(where={'company_name': company_name})
         if not company:
             company_document = {
                 "company_name": to_lowercase(job.get('company_name', 'N/A')),
                 "company_logo": job.get('company_logo'),
                 "description": job.get('company_desc')
             }
-            company = db.company.create(data=company_document)
-
-
+            # Await the asynchronous call to create the company
+            company = await db.company.create(data=company_document)
+            print(company, "here is company ======>")
+            
         # Convert all fields to lowercase
         job_document = {
             "title": to_lowercase(job.get('title', 'N/A')),
@@ -33,11 +34,12 @@ async def insert_job(job):
             "job_salary": job.get('job_salary', None),
             "source": to_lowercase(job.get('source', 'N/A')),
             "posted": job.get('posted', datetime.utcnow()),
-            "companyId": company.id
+            "companyId": company.id  # Access the id of the company object
         }
 
         # Validate input
 
+        # Await the asynchronous call to create the job
         job = await db.job.create(data=job_document)
         print("job created")
         return job 

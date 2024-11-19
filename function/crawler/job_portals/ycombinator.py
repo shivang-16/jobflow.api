@@ -57,6 +57,6 @@ async def scrape_ycombinator(soup):
                 print(job_info, "here")
 
                 # Insert the job info into the database
-                # await insert_job(job_info)
+                await insert_job(job_info)
 
             
