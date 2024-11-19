@@ -1,12 +1,14 @@
 from flask import Blueprint, request, jsonify
 from db.prisma import db  
 import bcrypt
+from utils import setCookie
 
-user_blueprint = Blueprint('user', __name__)
+auth_blueprint = Blueprint('auth', __name__)
 
-@user_blueprint.route('/', methods=['POST'])
+@auth_blueprint.route('/register', methods=['POST'])
 async def create_user():
     # await db.connect()
+    print(db.is_connected(), "is db conected")
     data = request.get_json()
     
     # Validate input
@@ -29,10 +31,14 @@ async def create_user():
                 'password': hashed_password.decode('utf-8'),  # Store the hashed password as a string
             }
         )
-        print(user, "here")
-        return dict(user), 201
+
+        # Call setCookie to generate the response
+        response = await setCookie(user)
+        return response
     
     except Exception as e:
-        print(e)  # Output the error to the console for debugging
+        print(e, "here is erorr")  # Output the error to the console for debugging
         return jsonify({'error': str(e)}), 500
+    # finally: 
+    #     await db.disconnect()
 

@@ -15,10 +15,21 @@ model User {
   name        String
   email       String   @unique
   password    String
-  jobs        Job[]
+  bookmarked_jobs  String[]
+  jobs        Applied_Jobs[]     // Relation to the Job model through a join table
   created_at  DateTime @default(now())
 }
 
+model Applied_Jobs {
+  id       String     @id @default(uuid()) @db.Uuid
+  jobId    String     @db.Uuid
+  status   String     @default("applied")
+
+  userId   String     @db.Uuid
+  user     User       @relation(fields: [userId], references: [id])
+
+  @@unique([jobId, userId])
+}
 
 model Company {
   id               String   @id @default(uuid()) @db.Uuid
@@ -49,9 +60,7 @@ model Job {
   posted        DateTime
   created_at    DateTime @default(now())
 
-  userId        String   @db.Uuid
-  user          User     @relation(fields: [userId], references: [id])
-  companyId     String   @db.Uuid  // Ensure this is of type UUID
+  companyId     String   @db.Uuid
   company       Company  @relation(fields: [companyId], references: [id])
 
   @@unique([title, companyId])  // This creates a unique index on title and companyId
