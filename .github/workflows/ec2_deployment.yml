@@ -1,0 +1,52 @@
+name: EC2_deployment
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up Python 3.10
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    # Step 3: Set environment variables
+    - name: Set environment variables
+      run: echo "${{ secrets.PROD_ENV }}" > .env
+
+    # Step 4: Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Step 7: Deploy the Flask app
+    - name: Deploy Flask application
+      run: |
+        # Stop any existing Flask application
+        pkill -f "flask run" || true
+        
+        # Export environment variables
+        export $(cat .env | xargs)
+        
+        # Start the Flask application in the background
+        nohup flask run --host=0.0.0.0 --port=8000 > flask.log 2>&1 &
+
+    # Step 8: Verify deployment
+    - name: Verify deployment
+      run: |
+        curl -f http://localhost:8000/ || echo "Deployment verification failed"
