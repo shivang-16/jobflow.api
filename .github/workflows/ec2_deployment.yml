@@ -41,13 +41,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # Step 6: Install Gunicorn in the virtual environment
+    # Step 6: Install Gunicorn
     - name: Install Gunicorn
       run: |
         source venv/bin/activate
         pip install gunicorn
 
-    # Step 7: Deploy the Flask app using Gunicorn
+    # Step 7: Deploy Flask application with Gunicorn
     - name: Deploy Flask application with Gunicorn
       run: |
         source venv/bin/activate
