@@ -16,8 +16,7 @@ CORS(
     allow_headers=["Content-Type", "Authorization"],
     supports_credentials=True  # Allow credentials (cookies, Authorization headers, etc.)
 )
-# Register Prisma with Flask
-register(db)
+
 
 @app.route('/api')
 def hello_world():
