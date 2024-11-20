@@ -19,7 +19,7 @@ CORS(
 # Register Prisma with Flask
 register(db)
 
-@app.route('/')
+@app.route('/api')
 def hello_world():
     return 'Hello world'
 
