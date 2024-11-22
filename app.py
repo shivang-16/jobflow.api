@@ -34,4 +34,4 @@ app.register_blueprint(job_blueprint, url_prefix='/api/job')
 app.register_blueprint(user_blueprint, url_prefix='/api/user')
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

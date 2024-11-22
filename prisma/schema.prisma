@@ -21,14 +21,16 @@ model User {
 }
 
 model Applied_Jobs {
-  id       String     @id @default(uuid()) @db.Uuid
-  jobId    String     @db.Uuid
-  status   String     @default("applied")
+  id       String  @id @default(uuid()) @db.Uuid
+  status   String  @default("applied")
 
-  userId   String     @db.Uuid
-  user     User       @relation(fields: [userId], references: [id])
+  userId   String  @db.Uuid
+  user     User    @relation(fields: [userId], references: [id])
 
-  @@unique([jobId, userId])
+  jobId    String  @db.Uuid
+  job      Job     @relation(fields: [jobId], references: [id]) // Relation to the Job model
+
+  @@unique([jobId, userId]) // Ensures a user can only apply to a job once
 }
 
 model Company {
@@ -62,6 +64,8 @@ model Job {
 
   companyId     String   @db.Uuid
   company       Company  @relation(fields: [companyId], references: [id])
+
+  appliedJobs       Applied_Jobs[]  // Relation to the Applied_Jobs model
 
   @@unique([title, companyId])  // This creates a unique index on title and companyId
 }

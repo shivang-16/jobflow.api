@@ -9,7 +9,6 @@ async def checkAuth():
     try:
         await db.connect()
         token = request.cookies.get('token')
-        print(token, "here")
         if not token:
             print("Unauthorised: Login First")
             return jsonify(({"error": "Unauthorised: Login First"}))

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from function.crawler.crawler import scrapejobsdata
 from db.prisma import db
+from utils import serialize_job
 
 job_blueprint = Blueprint('job', __name__)
 
@@ -15,21 +16,7 @@ async def create_job():
         return jsonify({'error': str(e)}), 500
     
 
-def serialize_job(job):
-    return {
-        'id': job.id,
-        'title': job.title,
-        'company': {
-            'name': job.company.company_name,
-            'logo': job.company.company_logo,
-            'description': job.company.description
-        },
-        'job_location': job.job_location,
-        'job_type': job.job_type,
-        'job_salary': job.job_salary,
-        'job_link': job.job_link,
-        'source': job.source
-    }
+
 
 @job_blueprint.route('/get', methods=['GET'])
 async def get_job():   
@@ -61,9 +48,35 @@ async def get_job():
         )
 
         # Serialize the job data
-        serialized_jobs = [serialize_job(job) for job in jobs]
+        serialized_jobs = [job.model_dump() for job in jobs]
 
         return jsonify({'jobs': serialized_jobs, 'page': page, 'page_size': page_size}), 200
+
+    except Exception as e:
+        print(e, "here is the error")  # Output the error to the console for debugging
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        # Disconnect Prisma client
+        await db.disconnect()
+
+
+@job_blueprint.route('/get/id', methods=['GET'])
+async def getJobId():   
+    try:
+        await db.connect()
+
+        jobId = request.args.get('jobId', default=1, type=int)
+
+        # Fetch jobs from the database including the company relation
+        job = await db.job.find_unique(
+            where={"id": jobId},
+        )
+
+        # Serialize the job data
+        serialized_job = serialize_job(job) 
+
+        return jsonify({'job': serialized_job }), 200
 
     except Exception as e:
         print(e, "here is the error")  # Output the error to the console for debugging

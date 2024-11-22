@@ -2,10 +2,8 @@ from function.utils import createFile, fetch_job_salary
 from function.insert_job import insert_job
 async def scrape_simplyhired(soup):
     portal = 'simplyhired'
-    print("here", portal)
 
     job_list = soup.find('ul', id='job-list')
-    print("here")
     if job_list:
         jobs = job_list.find_all('li')
         for job in jobs:

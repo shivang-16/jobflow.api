@@ -50,7 +50,6 @@ async def google_auth():
     data = request.get_json()
 
     access_token = data.get('access_token')
-    print(access_token, "here")
     if not access_token:
         return jsonify({"error": "No access token provided"}), 400
 
