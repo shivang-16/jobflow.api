@@ -1,9 +1,7 @@
 from flask import Flask
-from prisma import register
 from controllers.auth import auth_blueprint
 from controllers.job import job_blueprint
 from controllers.user import user_blueprint
-from db.prisma import db
 from flask_cors import CORS
 from middleware import protect_routes  
 

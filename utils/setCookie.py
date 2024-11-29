@@ -1,7 +1,6 @@
 import jwt
 import os
 from flask import jsonify, make_response
-from middleware import checkAuth
 
 JWT_SECRET_TOKEN = os.getenv('JWT_SECRET')
 

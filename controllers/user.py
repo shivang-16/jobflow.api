@@ -28,6 +28,62 @@ async def get_user():
         # Disconnect Prisma client
         await db.disconnect()
 
+
+@user_blueprint.route('/update', methods=['PUT'])
+async def update_user():
+    try:
+        # Connect to the database
+        await db.connect()
+
+        currentUser = g.user
+
+        # Fetch the current user from the database
+        user = await db.user.find_unique(where={"id": currentUser.id})
+        if not user:
+            return jsonify({"error": "User does not exist"}), 400
+
+        # Get the request data
+        body_data = request.get_json()
+
+        print(body_data, "here is body dat")
+
+        # Prepare the fields to update
+        update_data = {}
+
+        # Update name if provided
+        if 'name' in body_data and body_data['name']:
+            update_data['name'] = body_data['name']
+
+        # Update email if provided
+        if 'email' in body_data and body_data['email']:
+            update_data['email'] = body_data['email']
+
+        # Update job_statuses if provided
+        if 'job_statuses' in body_data and isinstance(body_data['job_statuses'], list):
+            update_data['job_statuses'] = [status.lower() for status in body_data['job_statuses']]
+
+
+        print(update_data, "here is updatedata")
+        # If there are fields to update, perform the update
+        if update_data:
+            updated_user = await db.user.update(
+                where={"id": currentUser.id},
+                data=update_data
+            )
+
+            user_dict = updated_user.model_dump() 
+            return jsonify({"success": True, "user": user_dict}), 200
+        else:
+            return jsonify({"error": "No valid fields to update"}), 400
+
+    except Exception as e:
+        print(e, "here is the error")  # Output the error to the console for debugging
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        # Disconnect Prisma client
+        await db.disconnect()
+
 @user_blueprint.route('/jobs/get', methods=['GET'])
 async def get_user_jobs():
     try:
