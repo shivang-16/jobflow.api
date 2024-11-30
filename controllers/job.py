@@ -85,3 +85,22 @@ async def getJobId():
     finally:
         # Disconnect Prisma client
         await db.disconnect()
+
+@job_blueprint.route('/get/company/list', methods=['GET'])
+async def get_companies_list():   
+    try:
+        await db.connect()
+
+        # Fetch jobs from the database including the company relation
+        companies = await db.company.find_many()
+
+        serialized_companies = [company.model_dump() for company in companies]
+        return jsonify({'companies': serialized_companies}), 200
+
+    except Exception as e:
+        print(e, "here is the error")  # Output the error to the console for debugging
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        # Disconnect Prisma client
+        await db.disconnect()

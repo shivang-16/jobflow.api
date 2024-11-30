@@ -1,6 +1,7 @@
 from db.prisma import db
 from flask import jsonify, request, Blueprint, g
 from utils import serialize_job
+from function.insert_job import insert_job
 
 user_blueprint = Blueprint('user', __name__)
 
@@ -28,6 +29,62 @@ async def get_user():
         # Disconnect Prisma client
         await db.disconnect()
 
+
+@user_blueprint.route('/update', methods=['PUT'])
+async def update_user():
+    try:
+        # Connect to the database
+        await db.connect()
+
+        currentUser = g.user
+
+        # Fetch the current user from the database
+        user = await db.user.find_unique(where={"id": currentUser.id})
+        if not user:
+            return jsonify({"error": "User does not exist"}), 400
+
+        # Get the request data
+        body_data = request.get_json()
+
+        print(body_data, "here is body dat")
+
+        # Prepare the fields to update
+        update_data = {}
+
+        # Update name if provided
+        if 'name' in body_data and body_data['name']:
+            update_data['name'] = body_data['name']
+
+        # Update email if provided
+        if 'email' in body_data and body_data['email']:
+            update_data['email'] = body_data['email']
+
+        # Update job_statuses if provided
+        if 'job_statuses' in body_data and isinstance(body_data['job_statuses'], list):
+            update_data['job_statuses'] = [status.lower() for status in body_data['job_statuses']]
+
+
+        print(update_data, "here is updatedata")
+        # If there are fields to update, perform the update
+        if update_data:
+            updated_user = await db.user.update(
+                where={"id": currentUser.id},
+                data=update_data
+            )
+
+            user_dict = updated_user.model_dump() 
+            return jsonify({"success": True, "user": user_dict}), 200
+        else:
+            return jsonify({"error": "No valid fields to update"}), 400
+
+    except Exception as e:
+        print(e, "here is the error")  # Output the error to the console for debugging
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        # Disconnect Prisma client
+        await db.disconnect()
+
 @user_blueprint.route('/jobs/get', methods=['GET'])
 async def get_user_jobs():
     try:
@@ -44,7 +101,7 @@ async def get_user_jobs():
         print(f"Filtering jobs with status: {status}")
 
         # Fetch user's applied jobs
-        userAppliedJobs = await db.applied_jobs.find_many(
+        userAppliedJobs = await db.tracked_jobs.find_many(
             where={"userId": user.id},
             include={
                 'job': {
@@ -84,14 +141,14 @@ async def apply_job():
         currentUser = g.user
 
         # Check if the job has already been applied for by the user
-        applied_job = await db.applied_jobs.find_first(
+        applied_job = await db.tracked_jobs.find_first(
             where={"userId": currentUser.id, "jobId": jobId}
         )
         if applied_job:
             return jsonify({"success": False, "error": "Job already applied"}), 400
 
         # Create the application entry
-        await db.applied_jobs.create(
+        await db.tracked_jobs.create(
             data={
                 "userId": currentUser.id,
                 "jobId": jobId,
@@ -126,12 +183,12 @@ async def update_job_status():
         
         # Get the current user from the request context
         currentUser = g.user
-        applied_job = await db.applied_jobs.find_unique(where={"userId": currentUser.id, "id": jobId})
+        applied_job = await db.tracked_jobs.find_unique(where={"userId": currentUser.id, "id": jobId})
         if not applied_job:
             return jsonify({"success": False, "error": "Applied Job not exists"}), 400
         
         # Update the user to connect the job
-        await db.applied_jobs.update(
+        await db.tracked_jobs.update(
             where={"userId": currentUser.id, "id": jobId},
             data={
                 "status": status
@@ -171,6 +228,29 @@ async def bookmark_job():
             "bookmarked_jobs": {
                 "push": jobId  # Use 'push' to add the jobId to the array
             }
+        }
+    )
+    
+    return jsonify({"success": True, "message": "Job saved to user"}), 200
+
+@user_blueprint.route('/job/create', methods=['POST'])
+async def create_job():
+
+    body_data = request.get_json()
+    
+    # Get the current user from the request context
+    currentUser = g.user
+    user = await db.user.find_unique(where={"id": currentUser.id})
+    if not user:
+        return jsonify({"success": False, "message": "User not exists"}), 400
+    
+    job = await insert_job(body_data)
+
+    await db.tracked_jobs.create(
+        data={
+            "userId": currentUser.id,
+            "jobId": job.id,
+            "status": body_data.status
         }
     )
     
