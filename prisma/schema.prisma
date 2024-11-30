@@ -18,11 +18,11 @@ model User {
   password    String?
   job_statuses      String[]  @default(["bookmarked", "applied", "accepted", "rejected"]) 
   bookmarked_jobs  String[]
-  jobs        Applied_Jobs[]     // Relation to the Job model through a join table
+  jobs        Tracked_Jobs[]     // Relation to the Job model through a join table
   created_at  DateTime @default(now())
 }
 
-model Applied_Jobs {
+model Tracked_Jobs {
   id       String  @id @default(uuid()) @db.Uuid
   status   String  @default("applied")
 
@@ -61,13 +61,13 @@ model Job {
   skills_required    String? 
   source        String
   source_logo   String?
-  posted        DateTime
+  posted        DateTime @default(now())
   created_at    DateTime @default(now())
 
   companyId     String   @db.Uuid
   company       Company  @relation(fields: [companyId], references: [id])
 
-  appliedJobs       Applied_Jobs[]  // Relation to the Applied_Jobs model
+  appliedJobs       Tracked_Jobs[]  // Relation to the tracked_jobs model
 
   @@unique([title, companyId])  // This creates a unique index on title and companyId
 }

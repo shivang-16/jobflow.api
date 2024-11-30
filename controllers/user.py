@@ -1,6 +1,7 @@
 from db.prisma import db
 from flask import jsonify, request, Blueprint, g
 from utils import serialize_job
+from function.insert_job import insert_job
 
 user_blueprint = Blueprint('user', __name__)
 
@@ -100,7 +101,7 @@ async def get_user_jobs():
         print(f"Filtering jobs with status: {status}")
 
         # Fetch user's applied jobs
-        userAppliedJobs = await db.applied_jobs.find_many(
+        userAppliedJobs = await db.tracked_jobs.find_many(
             where={"userId": user.id},
             include={
                 'job': {
@@ -140,14 +141,14 @@ async def apply_job():
         currentUser = g.user
 
         # Check if the job has already been applied for by the user
-        applied_job = await db.applied_jobs.find_first(
+        applied_job = await db.tracked_jobs.find_first(
             where={"userId": currentUser.id, "jobId": jobId}
         )
         if applied_job:
             return jsonify({"success": False, "error": "Job already applied"}), 400
 
         # Create the application entry
-        await db.applied_jobs.create(
+        await db.tracked_jobs.create(
             data={
                 "userId": currentUser.id,
                 "jobId": jobId,
@@ -182,12 +183,12 @@ async def update_job_status():
         
         # Get the current user from the request context
         currentUser = g.user
-        applied_job = await db.applied_jobs.find_unique(where={"userId": currentUser.id, "id": jobId})
+        applied_job = await db.tracked_jobs.find_unique(where={"userId": currentUser.id, "id": jobId})
         if not applied_job:
             return jsonify({"success": False, "error": "Applied Job not exists"}), 400
         
         # Update the user to connect the job
-        await db.applied_jobs.update(
+        await db.tracked_jobs.update(
             where={"userId": currentUser.id, "id": jobId},
             data={
                 "status": status
@@ -227,6 +228,29 @@ async def bookmark_job():
             "bookmarked_jobs": {
                 "push": jobId  # Use 'push' to add the jobId to the array
             }
+        }
+    )
+    
+    return jsonify({"success": True, "message": "Job saved to user"}), 200
+
+@user_blueprint.route('/job/create', methods=['POST'])
+async def create_job():
+
+    body_data = request.get_json()
+    
+    # Get the current user from the request context
+    currentUser = g.user
+    user = await db.user.find_unique(where={"id": currentUser.id})
+    if not user:
+        return jsonify({"success": False, "message": "User not exists"}), 400
+    
+    job = await insert_job(body_data)
+
+    await db.tracked_jobs.create(
+        data={
+            "userId": currentUser.id,
+            "jobId": job.id,
+            "status": body_data.status
         }
     )
     
