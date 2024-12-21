@@ -2,6 +2,7 @@ from db.prisma import db
 from flask import jsonify, request, Blueprint, g
 from utils import serialize_job
 from function.insert_job import insert_job
+from datetime import datetime
 
 user_blueprint = Blueprint('user', __name__)
 
@@ -235,23 +236,56 @@ async def bookmark_job():
 
 @user_blueprint.route('/job/create', methods=['POST'])
 async def create_job():
+    try:
+        await db.connect()
+        body_data = request.get_json()
+        print(body_data, "here is the body data")
+        
+        # Get the current user from the request context
+        currentUser = g.user
+        user = await db.user.find_unique(where={"id": currentUser.id})
+        if not user:
+            return jsonify({"success": False, "message": "User not exists"}), 400
+        
+        try:
+            # Attempt to insert the job
+            job = await insert_job(body_data)
+            print(job, "here is the job")
 
-    body_data = request.get_json()
-    
-    # Get the current user from the request context
-    currentUser = g.user
-    user = await db.user.find_unique(where={"id": currentUser.id})
-    if not user:
-        return jsonify({"success": False, "message": "User not exists"}), 400
-    
-    job = await insert_job(body_data)
+            # If successful, create a tracked job entry
+            await db.tracked_jobs.create(
+                data={
+                    "userId": currentUser.id,
+                    "jobId": job.id,
+                    "status": body_data.status
+                }
+            )
+            return jsonify({"success": True, "message": "Job saved to user"}), 200
 
-    await db.tracked_jobs.create(
-        data={
-            "userId": currentUser.id,
-            "jobId": job.id,
-            "status": body_data.status
-        }
-    )
-    
-    return jsonify({"success": True, "message": "Job saved to user"}), 200
+        except Exception as insert_error:
+            print(insert_error, "error during job insertion")
+            # If insert_job fails, create a user job entry
+            await db.connect()
+            await db.user_jobs.create(
+                data={
+                    "userId": currentUser.id,
+                    "title": body_data.get('title').lower(),
+                    "job_link": body_data.get('job_link'),
+                    "companyId": body_data.get('companyId'),
+                    "job_location": body_data.get('job_location'),
+                    "job_type": body_data.get('job_type'),
+                    "job_salary": body_data.get('job_salary'),
+                    "source": body_data.get('source'),
+                    "posted": body_data.get('posted', datetime.now().isoformat()),
+                    "status": body_data.get('status')
+                }
+            )
+            return jsonify({"success": True, "error": "User_job created"}), 500
+
+    except Exception as e:
+        print(e, "here is the error")  # Output the error to the console for debugging
+        return jsonify({"success": False, "error": str(e)}), 500
+
+    finally:
+        await db.disconnect()
+

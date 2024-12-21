@@ -2,11 +2,20 @@ from flask import Blueprint, request, jsonify
 from function.crawler.crawler import scrapejobsdata
 from db.prisma import db
 from utils import serialize_job
+import os
+from function.utils import scrape_job_link
+from function.crawler.job_portals import scrape_ycombinator_jobpage
+
+scraperapi_key = os.getenv('SCRAPER_API')
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+}
 
 job_blueprint = Blueprint('job', __name__)
 
 @job_blueprint.route('/', methods=['GET'])
-async def create_job():   
+async def create_jobs():   
     try:
         await scrapejobsdata()
         return "Successfully inserted job", 201
@@ -104,3 +113,54 @@ async def get_companies_list():
     finally:
         # Disconnect Prisma client
         await db.disconnect()
+
+
+@job_blueprint.route('/scrape', methods=['GET'])
+async def scrape_job():   
+    try:
+        portal=request.args.get("portal", default='', type=str) 
+        job_link=request.args.get("job_link", default='', type=str)
+
+        print(job_link, portal, "here is info") 
+
+        soup = await scrape_job_link(job_link, portal)
+        print("here is the soup", soup)
+
+        jobdata={}
+
+        if portal == 'ycombinator':
+            print(portal)
+            jobdata = await scrape_ycombinator_jobpage(soup, job_link)
+
+        # elif portal == 'glassdoor':
+        #     print(portal)
+        #     # jobdata = await scrape_glassdoor(soup)
+
+        # elif portal == 'indeed':
+        #     print(portal)
+        #     # jobdata = await scrape_indeed(soup)
+
+        # elif portal == 'ycombinator':
+        #     print(portal)
+        #     # await scrape_ycombinator(soup)
+
+        # # elif portal == 'internshala':
+        # #     await scrape_internshala(soup)
+
+        # elif portal == 'simplyhired':
+        #     print(portal)
+        #     await scrape_simplyhired(soup)
+
+        # elif portal == 'upwork':
+        #     await scrape_upwork(soup)
+
+        # elif portal == 'freelancer':
+        #     await scrape_freelancer(soup) 
+
+        print(jobdata)
+        return jobdata 
+
+    except Exception as e:
+        print(e, "here is the error")  # Output the error to the console for debugging
+        return jsonify({'error': str(e)}), 500
+

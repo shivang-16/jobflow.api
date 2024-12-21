@@ -18,10 +18,12 @@ model User {
   password    String?
   job_statuses      String[]  @default(["bookmarked", "applied", "accepted", "rejected"]) 
   bookmarked_jobs  String[]
-  jobs        Tracked_Jobs[]     // Relation to the Job model through a join table
+  jobs        Tracked_Jobs[] 
+  userJobs    User_Jobs[]
   created_at  DateTime @default(now())
 }
 
+// Jobs tracked by users
 model Tracked_Jobs {
   id       String  @id @default(uuid()) @db.Uuid
   status   String  @default("applied")
@@ -35,6 +37,30 @@ model Tracked_Jobs {
   @@unique([jobId, userId]) // Ensures a user can only apply to a job once
 }
 
+// Jobs create by user(all )
+model User_Jobs {
+  id            String  @id @default(uuid()) @db.Uuid
+  title         String
+  job_link      String?
+  job_type      String?
+  apply_link    String?
+  job_location  String?
+  job_salary    String?  
+  job_description    String? 
+  skills_required    String? 
+  source        String?
+  source_logo   String?
+  posted        DateTime? @default(now())
+  status   String  @default("applied")
+
+  userId   String  @db.Uuid
+  user     User    @relation(fields: [userId], references: [id])
+
+  companyId     String?   @db.Uuid
+  company       Company?  @relation(fields: [companyId], references: [id])
+  @@unique([title, companyId, userId])
+}
+
 model Company {
   id               String   @id @default(uuid()) @db.Uuid
   company_name     String
@@ -44,7 +70,8 @@ model Company {
   company_logo     String?
   socials          Json?    // JSON field to store all social media links
 
-  jobs             Job[]    // Relation to the Job model
+  jobs             Job[]
+  userJobs         User_Jobs[]
 
   @@unique([company_name]) // Ensures that company names are unique
 }

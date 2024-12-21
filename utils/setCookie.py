@@ -20,7 +20,8 @@ async def setCookie(user):
         httponly=True,
         secure=True,  # Use HTTPS in production
         samesite='None',  # Ensure cookies work in cross-site contexts
-        max_age=7 * 24 * 60 * 60  # 7 days in seconds
+        max_age=7 * 24 * 60 * 60,  # 7 days in seconds
+        domain=".jobflow.in"
     )
 
     return response
