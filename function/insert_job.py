@@ -3,7 +3,9 @@ from db.prisma import db
 from flask import jsonify
 
 async def insert_job(job):
-    await db.connect()
+    # Check if the database is not connected, then connect
+    if not db.is_connected():
+        await db.connect()
 
     try:
         def to_lowercase(value):

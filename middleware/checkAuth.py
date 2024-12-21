@@ -8,7 +8,10 @@ JWT_SECRET_TOKEN = os.getenv('JWT_SECRET')
 async def checkAuth():
     try:
         await db.connect()
-        token = request.cookies.get('token')
+        token = request.cookies.get('token') or request.headers.get('Authorization')
+        print(token, "here")
+        if token and token.startswith('Bearer '):
+            token = token.split(' ')[1]
         if not token:
             print("Unauthorised: Login First")
             return jsonify(({"error": "Unauthorised: Login First"}))
