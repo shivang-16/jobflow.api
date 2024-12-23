@@ -65,11 +65,14 @@ async def scrape_ycombinator_jobpage(soup, job_link):
     if soup:
         job_title = soup.find('span', class_="company-name")
         if job_title:
-            # Extract the company name from the job title
+            # Extract both job title and company name
             title_text = job_title.text.strip()
             if "at" in title_text:
-                company_name = title_text.split("at")[-1].strip()  # Get the part after the last "at"
+                parts = title_text.split("at")
+                job_title_name = "at".join(parts[:-1]).strip()  # Join all parts before the last "at"
+                company_name = parts[-1].strip()  # Get the part after last "at"
             else:
+                job_title_name = title_text
                 company_name = None  # Handle case where "at" is not found
 
         job_title_element = soup.find('div', class_='company-title').find_all('div', class_='text-gray-500')
@@ -89,7 +92,7 @@ async def scrape_ycombinator_jobpage(soup, job_link):
                 company_logo = img_tag['src']
 
         job_info = {
-            "title": title_text,  # Use the stripped title text
+            "title": job_title_name,  # Use the extracted job title
             "job_link": job_link,
             "job_location": job_location_text,  # Use the extracted job location
             "job_type": job_type_text,  # New field for job type
@@ -99,7 +102,6 @@ async def scrape_ycombinator_jobpage(soup, job_link):
             "source": portal
         }
 
-        print(job_info, "end of funciotns")
+        # print(job_info, "end of funciotns")
 
         return job_info
-
