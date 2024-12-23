@@ -5,6 +5,9 @@ from utils import serialize_job
 import os
 from function.utils import scrape_job_link
 from function.crawler.job_portals import scrape_ycombinator_jobpage
+from utils.functions import checkExistingJob
+from middleware import protect_routes
+from functools import wraps
 
 scraperapi_key = os.getenv('SCRAPER_API')
 
@@ -13,6 +16,18 @@ headers = {
 }
 
 job_blueprint = Blueprint('job', __name__)
+
+# Create a decorator for protecting specific routes
+def protect_route():
+    def decorator(f):
+        @wraps(f)
+        async def decorated_function(*args, **kwargs):
+            protection_result = await protect_routes()
+            if protection_result:
+                return protection_result
+            return await f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 @job_blueprint.route('/', methods=['GET'])
 async def create_jobs():   
@@ -116,17 +131,16 @@ async def get_companies_list():
 
 
 @job_blueprint.route('/scrape', methods=['GET'])
+@protect_route()
 async def scrape_job():   
     try:
-        portal=request.args.get("portal", default='', type=str) 
-        job_link=request.args.get("job_link", default='', type=str)
+        portal = request.args.get("portal", default='', type=str) 
+        job_link = request.args.get("job_link", default='', type=str)
 
         print(job_link, portal, "here is info") 
 
         soup = await scrape_job_link(job_link, portal)
-        print("here is the soup", soup)
-
-        jobdata={}
+        jobdata = {}
 
         if portal == 'ycombinator':
             print(portal)
@@ -157,10 +171,11 @@ async def scrape_job():
         # elif portal == 'freelancer':
         #     await scrape_freelancer(soup) 
 
-        print(jobdata)
-        return jobdata 
+        # print(jobdata)
+        jobdata = await checkExistingJob(jobdata)
+        
+        return jobdata
 
     except Exception as e:
         print(e, "here is the error")  # Output the error to the console for debugging
         return jsonify({'error': str(e)}), 500
-
